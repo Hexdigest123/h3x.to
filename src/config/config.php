@@ -1,0 +1,28 @@
+<?php
+
+// Basis-URL
+define('BASE_URL', 'http://localhost:8080/');
+
+// Datenbank-Konfiguration (PostgreSQL)
+define('DB_HOST', getenv('DB_HOST') ?: 'db');
+define('DB_USER', getenv('DB_USER') ?: 'mvc_user');
+define('DB_PASS', getenv('DB_PASS') ?: 'mvc_password');
+define('DB_NAME', getenv('DB_NAME') ?: 'mvc_db');
+define('DB_PORT', getenv('DB_PORT') ?: '5432');
+
+// App-Konfiguration
+define('APP_NAME', 'H3X.TO MVC App');
+define('APP_VERSION', '1.0.0');
+define('APP_ENV', getenv('APP_ENV') ?: 'development');
+
+// Zeitzone
+date_default_timezone_set('Europe/Berlin');
+
+// Error Reporting (abhängig von Umgebung)
+if (APP_ENV === 'development') {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+} else {
+    error_reporting(0);
+    ini_set('display_errors', 0);
+}

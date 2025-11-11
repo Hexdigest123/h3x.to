@@ -1,0 +1,45 @@
+.PHONY: help build up down restart logs shell db-shell composer-install clean
+
+help: ## Zeigt diese Hilfe an
+		@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+build: ## Baut die Docker Container
+		docker compose build
+
+up: ## Startet die Container
+		docker compose up -d
+
+down: ## Stoppt die Container
+		docker compose down
+
+restart: ## Startet die Container neu
+		docker compose restart
+
+logs: ## Zeigt die Logs
+		docker compose logs -f
+
+logs-app: ## Zeigt nur App-Logs
+		docker compose logs -f app
+
+logs-nginx: ## Zeigt nur Nginx-Logs
+		docker compose logs -f nginx
+
+shell: ## Öffnet eine Shell im App-Container
+		docker compose exec app sh
+
+db-shell: ## Öffnet PostgreSQL Shell
+		docker compose exec db psql -U mvc_user -d mvc_db
+
+composer-install: ## Installiert Composer Dependencies
+		docker compose exec app composer install
+
+composer-update: ## Updated Composer Dependencies
+		docker compose exec app composer update
+
+clean: ## Entfernt alle Container und Volumes
+		docker compose down -v
+
+init: build up ## Initialisiert das Projekt (Build + Start)
+	@echo "Projekt wurde initialisiert!"
+	@echo "App läuft auf: http://localhost:8080"
+	@echo "phpPgAdmin: http://localhost:8081"
