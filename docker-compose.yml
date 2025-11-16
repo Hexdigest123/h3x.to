@@ -32,9 +32,9 @@ services:
     container_name: h3x_db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: db
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mvc_db
+      POSTGRES_USER: mvc_user
+      POSTGRES_PASSWORD: mvc_password
     ports:
       - "5432:5432"
     volumes:

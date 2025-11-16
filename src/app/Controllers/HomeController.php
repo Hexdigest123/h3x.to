@@ -3,75 +3,81 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Models\BlogPost;
+use App\Models\SocialLink;
 
 class HomeController extends Controller
 {
     public function index()
     {
-        $heroLayers = [
-            ['text' => 'H3x', 'variant' => 'outline'],
-            ['text' => 'H3x', 'variant' => 'shadow'],
-            ['text' => 'H3x', 'variant' => 'solid'],
-        ];
+        /** @var BlogPost $blogModel */
+        $blogModel = $this->model('BlogPost');
+        /** @var SocialLink $socialLinkModel */
+        $socialLinkModel = $this->model('SocialLink');
+
+        $blogPosts = $blogModel->getPublicPosts();
+        $socialLinks = $socialLinkModel->activeLinks();
 
         $profile = [
             'alias' => 'Hexdigest',
             'handle' => '@BruteShard.to',
             'role' => 'Security Research · Offensive R&D',
             'summary' => 'Focusing on practical misconfigurations, anon-key abuse and sharing calm write-ups for the community.',
-            'avatar' => 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=facearea&w=400&h=400&q=80',
-            'tags' => [
-                ['label' => 'BruteShard.to', 'href' => 'https://bruteshard.to', 'icon' => '◆'],
-                ['label' => '@Hexdigest', 'href' => 'https://twitter.com/Hexdigest', 'icon' => '◆'],
-                ['label' => 'Keybase', 'href' => 'https://keybase.io/hexdigest', 'icon' => '◆'],
-            ],
+            'avatar' => BASE_URL . 'images/profile.png',
         ];
 
-        $projects = [
-            [
-                'slug' => 'supabase-anon',
-                'label' => 'BruteShard.to',
-                'title' => 'Supabase anon key misconfiguration',
-                'date' => 'June 30, 2023',
-                'summary' => 'Using the anon key to pivot into internal APIs and leverage row level policies for data exfiltration.',
-                'sections' => [
-                    [
-                        'title' => 'What it is',
-                        'items' => [
-                            'The anon key is a public JWT used by client apps to access Supabase.',
-                            'It governs access through Row Level Security (RLS) and policies mis-configured by the user.',
-                        ],
-                    ],
-                    [
-                        'title' => 'Common misconfigurations',
-                        'items' => [
-                            'Overly broad policies that don\'t scope by user claims.',
-                            'Allowing "*" policies that skip auth or rely on client-side filtering.',
-                            'Re-using the anon key in server-side scripts where RLS isn\'t enforced.',
-                        ],
-                    ],
-                    [
-                        'title' => 'Where it breaks',
-                        'items' => [
-                            'Downgraded auth controls in auth tables or password resets.',
-                            'Cross-project leaks when the anon key is shared with audiences.',
-                            'Complete read/write of verified tables in edge proxies allowing RCE.',
-                        ],
-                    ],
+        $linkCards = [];
+        if (!empty($socialLinks)) {
+            foreach ($socialLinks as $link) {
+                $linkCards[] = [
+                    'label' => $link->name,
+                    'href' => $link->url,
+                    'icon' => str_starts_with($link->icon_path, 'http')
+                        ? $link->icon_path
+                        : BASE_URL . ltrim($link->icon_path, '/'),
+                ];
+            }
+        } else {
+            $linkCards = [
+                [
+                    'label' => 'Project site',
+                    'href' => 'https://bruteshard.to',
+                    'icon' => BASE_URL . 'images/url.svg',
                 ],
-                'impact' => [
-                    'Data exfiltration (read).',
-                    'Privilege escalation to service roles.',
-                    'Compliance violations for GDPR/PII.',
+                [
+                    'label' => 'GitHub',
+                    'href' => 'https://github.com/hexdigest',
+                    'icon' => BASE_URL . 'images/github.svg',
                 ],
-            ],
-        ];
+                [
+                    'label' => 'GitLab',
+                    'href' => 'https://gitlab.com/hexdigest',
+                    'icon' => BASE_URL . 'images/gitlab.svg',
+                ],
+            ];
+        }
 
         $navLinks = [
-            ['label' => 'Welcome', 'href' => '#top', 'icon' => '⌂'],
-            ['label' => 'Projects', 'href' => '#project-supabase-anon', 'icon' => '❖'],
-            ['label' => 'Bugs', 'href' => BASE_URL . 'about', 'icon' => '⚡'],
-            ['label' => 'Admin', 'href' => BASE_URL . 'admin', 'icon' => '✦'],
+            [
+                'label' => 'Welcome',
+                'href' => '#top',
+                'icon' => BASE_URL . 'images/home.svg',
+            ],
+            [
+                'label' => 'Projects',
+                'href' => '#projects',
+                'icon' => BASE_URL . 'images/project.svg',
+            ],
+            [
+                'label' => 'Bugs',
+                'href' => '#bugs',
+                'icon' => BASE_URL . 'images/bug.svg',
+            ],
+            [
+                'label' => 'Admin',
+                'href' => BASE_URL . 'admin',
+                'icon' => BASE_URL . 'images/admin.svg',
+            ],
         ];
 
         $lost = [
@@ -84,11 +90,10 @@ class HomeController extends Controller
             'title' => 'H3x Portfolio',
             'description' => 'A calm place to browse Hexdigest case notes.',
             'brand' => 'H3x',
-            'brandTagline' => 'Recon log',
-            'heroLayers' => $heroLayers,
-            'heroSubline' => 'Case files and tiny stories from security field notes.',
+            'brandTagline' => '',
             'profile' => $profile,
-            'projects' => $projects,
+            'linkCards' => $linkCards,
+            'blogPosts' => $blogPosts,
             'navLinks' => $navLinks,
             'lost' => $lost,
         ];
