@@ -20,9 +20,9 @@ class HomeController extends Controller
 
         $profile = [
             'alias' => 'Hexdigest',
-            'handle' => '@BruteShard.to',
-            'role' => 'Security Research · Offensive R&D',
-            'summary' => 'Focusing on practical misconfigurations, anon-key abuse and sharing calm write-ups for the community.',
+            'handle' => '@h3x.to',
+            'role' => 'Security Research · Offensive Bug Bounty Hunting',
+            'summary' => 'Focusing on learning penetration testing, malware development, and sharing my experiences in different tech fields.',
             'avatar' => BASE_URL . 'images/profile.png',
         ];
 

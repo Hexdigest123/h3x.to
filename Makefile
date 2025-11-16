@@ -1,3 +1,16 @@
+-include .env
+
+DB_HOST ?= db
+DB_PORT ?= 5432
+DB_NAME ?= mvc_db
+DB_USER ?= mvc_user
+ifdef DB_PASS
+DB_PASSWORD ?= $(DB_PASS)
+endif
+DB_PASSWORD ?= mvc_password
+
+export DB_HOST DB_PORT DB_NAME DB_USER DB_PASS DB_PASSWORD
+
 .PHONY: help build up down restart logs shell db-shell composer-install clean reset-db
 
 help: ## Zeigt diese Hilfe an
@@ -28,7 +41,7 @@ shell: ## Öffnet eine Shell im App-Container
 		docker compose exec app sh
 
 db-shell: ## Öffnet PostgreSQL Shell
-		docker compose exec db psql -U mvc_user -d mvc_db
+		docker compose exec db env PGPASSWORD="$(DB_PASSWORD)" psql -U "$(DB_USER)" -d "$(DB_NAME)"
 
 composer-install: ## Installiert Composer Dependencies
 		docker compose exec app composer install
@@ -52,7 +65,10 @@ reset-db: ## Wipes containers/volumes, recreates DB, seeds schema/data, and star
 	@echo "Applying db/init.sql seed…"
 	sleep 10
 	docker compose cp db/init.sql db:/tmp/init.sql
-	docker compose exec db psql -U mvc_user -d mvc_db -f /tmp/init.sql
+	docker compose exec db env PGPASSWORD="$(DB_PASSWORD)" psql -U "$(DB_USER)" -d "$(DB_NAME)" -f /tmp/init.sql
+	@echo "Seeding test admin credentials…"
+	docker compose cp db/seed_test_admin.sql db:/tmp/seed_test_admin.sql
+	docker compose exec db env PGPASSWORD="$(DB_PASSWORD)" psql -U "$(DB_USER)" -d "$(DB_NAME)" -f /tmp/seed_test_admin.sql
 	@echo "Starting full stack…"
 	docker compose up -d
 	@echo "All set. App on http://localhost:8080"

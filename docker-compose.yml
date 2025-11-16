@@ -6,6 +6,18 @@ services:
     container_name: h3x_app
     restart: unless-stopped
     working_dir: /var/www/html
+    env_file:
+      - ./.env
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-mvc_db}
+      DB_USER: ${DB_USER:-mvc_user}
+      DB_PASS: ${DB_PASS:-mvc_password}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH:-}
     volumes:
       - ./src:/var/www/html
     networks:
@@ -31,13 +43,18 @@ services:
     image: postgres:15-alpine
     container_name: h3x_db
     restart: unless-stopped
+    env_file:
+      - ./.env
     environment:
-      POSTGRES_DB: mvc_db
-      POSTGRES_USER: mvc_user
-      POSTGRES_PASSWORD: mvc_password
+      POSTGRES_DB: ${DB_NAME:-mvc_db}
+      POSTGRES_USER: ${DB_USER:-mvc_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-mvc_password}
     ports:
       - "5432:5432"
     volumes:
+      # Seed schema and a default admin user on first boot of a fresh volume
+      - ./db/init.sql:/docker-entrypoint-initdb.d/00_init.sql:ro
+      - ./db/seed_test_admin.sql:/docker-entrypoint-initdb.d/01_seed_test_admin.sql:ro
       - postgres_data:/var/lib/postgresql/data
     networks:
       - h3x_network

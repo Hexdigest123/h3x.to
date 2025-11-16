@@ -53,6 +53,15 @@
             $('body').addClass('intro-complete');
         }, 1700);
 
+        const analytics = (window.h3xAnalytics && typeof window.h3xAnalytics.trackInteraction === 'function')
+            ? window.h3xAnalytics
+            : null;
+
+        function trackInteraction(type, details) {
+            if (!analytics) return;
+            analytics.trackInteraction(type, details);
+        }
+
         if (searchInput.length) {
             searchInput.on('input', function () {
                 filterPosts($(this).val());
@@ -71,6 +80,8 @@
 
             blogModal.addClass('is-open');
             $('body').addClass('lock-scroll');
+
+            trackInteraction('post_open', { title: title, target: title, meta: 'read_more' });
         });
 
         $('.blog-modal').on('click', '[data-dismiss="blog-modal"]', function () {
@@ -95,6 +106,10 @@
 
         navPanel.on('click', 'a', function () {
             toggleNav(navPanel, false);
+            const link = $(this);
+            const label = link.text().trim();
+            const href = link.attr('href') || '';
+            trackInteraction('nav_click', { title: label, target: href || label });
         });
 
         $('[data-action="lost"]').on('click', function () {
@@ -123,6 +138,31 @@
         navPanel.on('click', function (event) {
             if (event.target === this) {
                 toggleNav(navPanel, false);
+            }
+        });
+
+        // Track hover/read interest on blog cards
+        const hoverTimers = new WeakMap();
+        const hoverTracked = new WeakMap();
+
+        $('.blog-card').on('mouseenter', function () {
+            const card = this;
+            if (hoverTracked.get(card)) return;
+
+            const timer = setTimeout(function () {
+                const title = $(card).find('h3').text();
+                trackInteraction('post_hover', { title: title, target: title, durationMs: 2000, meta: 'hover' });
+                hoverTracked.set(card, true);
+            }, 2000);
+
+            hoverTimers.set(card, timer);
+        });
+
+        $('.blog-card').on('mouseleave', function () {
+            const timer = hoverTimers.get(this);
+            if (timer) {
+                clearTimeout(timer);
+                hoverTimers.delete(this);
             }
         });
     });
