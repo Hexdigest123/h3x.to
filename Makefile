@@ -1,4 +1,4 @@
-.PHONY: help build up down restart logs shell db-shell composer-install clean
+.PHONY: help build up down restart logs shell db-shell composer-install clean reset-db
 
 help: ## Zeigt diese Hilfe an
 		@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -43,3 +43,16 @@ init: build up ## Initialisiert das Projekt (Build + Start)
 	@echo "Projekt wurde initialisiert!"
 	@echo "App läuft auf: http://localhost:8080"
 	@echo "phpPgAdmin: http://localhost:8081"
+
+reset-db: ## Wipes containers/volumes, recreates DB, seeds schema/data, and starts the stack
+	@echo "Stopping and removing containers + volumes…"
+	docker compose down -v
+	@echo "Starting database container…"
+	docker compose up -d db
+	@echo "Applying db/init.sql seed…"
+	sleep 10
+	docker compose cp db/init.sql db:/tmp/init.sql
+	docker compose exec db psql -U mvc_user -d mvc_db -f /tmp/init.sql
+	@echo "Starting full stack…"
+	docker compose up -d
+	@echo "All set. App on http://localhost:8080"
