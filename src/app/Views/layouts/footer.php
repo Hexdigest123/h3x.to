@@ -4,5 +4,6 @@
 </footer>
 <script src="<?php echo BASE_URL; ?>js/jquery-3.7.1.min.js?v=2"></script>
 <script src="<?php echo BASE_URL; ?>js/main.js?v=2"></script>
+<script src="<?php echo BASE_URL; ?>js/analytics.js?v=1"></script>
 </body>
 </html>

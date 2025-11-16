@@ -53,6 +53,9 @@ reset-db: ## Wipes containers/volumes, recreates DB, seeds schema/data, and star
 	sleep 10
 	docker compose cp db/init.sql db:/tmp/init.sql
 	docker compose exec db psql -U mvc_user -d mvc_db -f /tmp/init.sql
+	@echo "Seeding test admin credentials…"
+	docker compose cp db/seed_test_admin.sql db:/tmp/seed_test_admin.sql
+	docker compose exec db psql -U mvc_user -d mvc_db -f /tmp/seed_test_admin.sql
 	@echo "Starting full stack…"
 	docker compose up -d
 	@echo "All set. App on http://localhost:8080"

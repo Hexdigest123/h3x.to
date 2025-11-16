@@ -23,4 +23,23 @@ class SocialLink extends Model
 
         return $this->db->fetchAll();
     }
+
+    public function getAllLinks()
+    {
+        $sql = <<<SQL
+            SELECT
+                id,
+                name,
+                url,
+                icon_path,
+                is_active,
+                display_order
+            FROM social_links
+            ORDER BY display_order ASC, id ASC
+        SQL;
+
+        $this->db->query($sql);
+
+        return $this->db->fetchAll();
+    }
 }

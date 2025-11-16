@@ -28,4 +28,25 @@ class BlogPost extends Model
 
         return $this->db->fetchAll();
     }
+
+    public function getAllPosts()
+    {
+        $sql = <<<SQL
+            SELECT
+                id,
+                title,
+                slug,
+                category,
+                is_public,
+                short_description,
+                created_at,
+                published_at
+            FROM blog_posts
+            ORDER BY created_at DESC
+        SQL;
+
+        $this->db->query($sql);
+
+        return $this->db->fetchAll();
+    }
 }

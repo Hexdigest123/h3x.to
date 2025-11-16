@@ -56,4 +56,11 @@ class User extends Model
         $this->db->bind(':email', $email);
         return $this->db->fetch();
     }
+
+    public function findByName($name)
+    {
+        $this->db->query('SELECT * FROM users WHERE LOWER(name) = LOWER(:name) LIMIT 1');
+        $this->db->bind(':name', $name);
+        return $this->db->fetch();
+    }
 }

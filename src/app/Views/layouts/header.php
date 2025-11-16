@@ -9,6 +9,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jacques+Francois+Shadow&family=Playfair+Display:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/main.css?v=2">
+    <script>
+        window.APP_BASE_URL = "<?php echo BASE_URL; ?>";
+        window.APP_CLIENT_IP = "<?php echo $_SERVER['HTTP_X_FORWARDED_FOR'] ?? ($_SERVER['REMOTE_ADDR'] ?? ''); ?>";
+    </script>
 </head>
 <body class="site-body">
 <div class="intro-screen" id="intro-screen">

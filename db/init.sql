@@ -854,9 +854,9 @@ BEGIN
 
     INSERT INTO social_links (name, url, icon_path, display_order, is_active)
     VALUES
-        ('Project site', 'https://bruteshard.to', 'images/url.svg', 1, TRUE),
-        ('GitHub', 'https://github.com/hexdigest', 'images/github.svg', 2, TRUE),
-        ('GitLab', 'https://gitlab.com/hexdigest', 'images/gitlab.svg', 3, TRUE)
+        ('Zendoc', 'https://zendoc.io', 'images/url.svg', 1, TRUE),
+        ('LogiQ IT', 'https://logiqit.de', 'images/url.svg', 2, TRUE),
+        ('GitHub', 'https://github.com/hexdigest123', 'images/github.svg', 3, TRUE)
     ON CONFLICT (name) DO NOTHING;
 END $$;
 
