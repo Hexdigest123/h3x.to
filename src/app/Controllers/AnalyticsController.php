@@ -36,6 +36,7 @@ class AnalyticsController extends Controller
     private function normalizeVisitorData(array $incoming): array
     {
         $ip = $this->clientIp();
+        $ipDetails = $this->lookupIpDetails($ip);
         $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
         $sessionId = $incoming['session_id'] ?? bin2hex(random_bytes(16));
         $fingerprint = $incoming['fingerprint_hash'] ?? hash('sha256', $sessionId . $userAgent);
@@ -55,10 +56,10 @@ class AnalyticsController extends Controller
             'session_id' => $sessionId,
             'fingerprint_hash' => $fingerprint,
             'ip_address' => $ip,
-            'ip_country' => $incoming['ip_country'] ?? null,
-            'ip_city' => $incoming['ip_city'] ?? null,
-            'ip_region' => $incoming['ip_region'] ?? null,
-            'ip_timezone' => $incoming['ip_timezone'] ?? null,
+            'ip_country' => $incoming['ip_country'] ?? ($ipDetails['countryCode'] ?? $ipDetails['country'] ?? null),
+            'ip_city' => $incoming['ip_city'] ?? ($ipDetails['city'] ?? null),
+            'ip_region' => $incoming['ip_region'] ?? ($ipDetails['regionName'] ?? $ipDetails['region'] ?? null),
+            'ip_timezone' => $incoming['ip_timezone'] ?? ($ipDetails['timezone'] ?? null),
             'user_agent' => $userAgent,
             'browser' => $browser,
             'browser_version' => $incoming['browser_version'] ?? null,
@@ -141,6 +142,66 @@ class AnalyticsController extends Controller
         ];
 
         return ['session' => $session, 'page_view' => $pageView];
+    }
+
+    private function lookupIpDetails(string $ip): array
+    {
+        if (empty($ip) || $this->isPrivateIp($ip)) {
+            return [];
+        }
+
+        $url = 'http://ip-api.com/json/' . rawurlencode($ip);
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'timeout' => 2,
+            ],
+        ]);
+
+        $response = @file_get_contents($url, false, $context);
+        if ($response === false) {
+            return [];
+        }
+
+        $data = json_decode($response, true);
+        if (!is_array($data) || ($data['status'] ?? '') !== 'success') {
+            return [];
+        }
+
+        return $data;
+    }
+
+    private function isPrivateIp(string $ip): bool
+    {
+        if (empty($ip) || filter_var($ip, FILTER_VALIDATE_IP) === false) {
+            return true;
+        }
+
+        $flags = FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
+        if (filter_var($ip, FILTER_VALIDATE_IP, $flags) === false) {
+            return true;
+        }
+
+        // Fallback patterns for link-local and loopback ranges to avoid needless lookups
+        $privatePatterns = [
+            '/^127\./',
+            '/^10\./',
+            '/^192\.168\./',
+            '/^172\.(1[6-9]|2\d|3[0-1])\./',
+            '/^169\.254\./',
+            '/^::1$/',
+            '/^fc/i',
+            '/^fd/i',
+            '/^fe80:/i',
+        ];
+
+        foreach ($privatePatterns as $pattern) {
+            if (preg_match($pattern, $ip)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function clientIp(): string

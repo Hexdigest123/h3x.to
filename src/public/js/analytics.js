@@ -34,25 +34,9 @@
     });
 
     function flushAnalytics(useBeacon) {
-        buildPayload().then((payload) => {
-            const body = JSON.stringify(payload);
-
-            if (useBeacon && navigator.sendBeacon) {
-                try {
-                    navigator.sendBeacon(endpoint, new Blob([body], { type: 'application/json' }));
-                    return;
-                } catch (e) {
-                    // fall back to fetch
-                }
-            }
-
-            fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                keepalive: useBeacon,
-                body,
-            }).catch(() => {});
-        }).catch(() => {});
+        buildPayload()
+            .then((payload) => sendAnalyticsPayload(payload, useBeacon))
+            .catch(() => {});
     }
 
     function getSessionId() {
@@ -170,6 +154,46 @@
             key_presses: state.keyPresses,
             page_views: state.pageViews,
         };
+    }
+
+    function buildInteractionPayload(type, details) {
+        const title = details && details.title ? details.title : document.title;
+        const target = details && details.target ? details.target : null;
+        const meta = details && details.meta ? details.meta : null;
+        const durationMs = details && details.durationMs ? details.durationMs : null;
+
+        return {
+            session_id: sessionId,
+            fingerprint_hash: null,
+            entry_page: window.location.href,
+            page_title: `Interaction: ${type}${target ? ' - ' + target : ''}`,
+            page_path: details && details.pagePath ? details.pagePath : window.location.pathname,
+            page_query_string: window.location.search || null,
+            page_hash: window.location.hash || null,
+            referrer: document.referrer || null,
+            page_views: 0,
+            clicks: type === 'nav_click' ? 1 : 0,
+            scrolls: 0,
+            mouse_movements: 0,
+            key_presses: 0,
+            active_time: 0,
+            inactive_time: 0,
+            time_on_page: 0,
+            event_type: type,
+            event_target: target,
+            event_meta: meta,
+            event_duration_ms: durationMs,
+            page_title_fallback: title,
+        };
+    }
+
+    function trackInteraction(type, details = {}) {
+        try {
+            const payload = buildInteractionPayload(type, details);
+            sendAnalyticsPayload(payload, true);
+        } catch (e) {
+            // ignore tracking failures
+        }
     }
 
     function updateScrollDepth(currentState) {
@@ -441,8 +465,31 @@
         };
     }
 
+    function sendAnalyticsPayload(payload, useBeacon) {
+        const body = JSON.stringify(payload);
+
+        if (useBeacon && navigator.sendBeacon) {
+            try {
+                navigator.sendBeacon(endpoint, new Blob([body], { type: 'application/json' }));
+                return;
+            } catch (e) {
+                // fall back to fetch
+            }
+        }
+
+        fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            keepalive: useBeacon,
+            body,
+        }).catch(() => {});
+    }
+
     function delta(start, end) {
         if (!start || !end) return null;
         return Math.max(0, Math.round(end - start));
     }
+
+    window.h3xAnalytics = window.h3xAnalytics || {};
+    window.h3xAnalytics.trackInteraction = trackInteraction;
 })();
