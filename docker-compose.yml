@@ -38,6 +38,9 @@ services:
     ports:
       - "5432:5432"
     volumes:
+      # Seed schema and a default admin user on first boot of a fresh volume
+      - ./db/init.sql:/docker-entrypoint-initdb.d/00_init.sql:ro
+      - ./db/seed_test_admin.sql:/docker-entrypoint-initdb.d/01_seed_test_admin.sql:ro
       - postgres_data:/var/lib/postgresql/data
     networks:
       - h3x_network
