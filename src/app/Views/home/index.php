@@ -1,17 +1,12 @@
-<?php require_once '../app/Views/layouts/header.php'; ?>
+<?php require_once __DIR__ . '/../layouts/header.php'; ?>
 
-<h1><?php echo $title; ?></h1>
-<p><?php echo $description; ?></p>
-
-<div class="welcome-box">
-    <h2>Willkommen zum MVC Boilerplate</h2>
-    <p>Dies ist eine einfache MVC-Struktur in PHP.</p>
-    <ul>
-        <li>Model-View-Controller Pattern</li>
-        <li>Routing System</li>
-        <li>Datenbankanbindung mit PDO</li>
-        <li>Autoloading</li>
-    </ul>
+<?php require __DIR__ . '/../components/hero-logo.php'; ?>
+<div class="grid">
+    <?php require __DIR__ . '/../components/profile-card.php'; ?>
+    <?php require __DIR__ . '/../components/project-card.php'; ?>
 </div>
 
-<?php require_once '../app/Views/layouts/footer.php'; ?>
+<?php require __DIR__ . '/../components/nav-panel.php'; ?>
+<?php require __DIR__ . '/../components/lost-panel.php'; ?>
+
+<?php require_once __DIR__ . '/../layouts/footer.php'; ?>
