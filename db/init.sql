@@ -775,82 +775,10 @@ FROM blog_posts;
 
 -- Seed minimal content for the landing page
 DO $$
-DECLARE
-    author_id INTEGER;
 BEGIN
     INSERT INTO users (name, password, role)
     VALUES ('hexdigest', 'changeme', 'Admin')
     ON CONFLICT (name) DO NOTHING;
-
-    SELECT id INTO author_id FROM users WHERE name = 'hexdigest' LIMIT 1;
-
-    IF author_id IS NOT NULL THEN
-        INSERT INTO blog_posts (title, slug, short_description, description, html, category, is_public, author_id, published_at)
-        VALUES (
-            'Supabase anon key misconfiguration',
-            'supabase-anon-key',
-            'Using the anon key to pivot into internal APIs and abuse row level policies.',
-            'Exploring anon key gaps seen in the field.',
-            $post1$<p>Anon keys belong on the public side of your Supabase apps, but they often inherit over-permissioned policies. This case file walks through pivoting from anon access into internal APIs and the guardrails that should exist.</p>
-            <ul><li>Review every RLS policy with claims in mind.</li><li>Never reuse anon keys inside edge functions without explicit scoping.</li><li>Ship audit logs for anon actions.</li></ul>$post1$,
-            'Projects',
-            TRUE,
-            author_id,
-            NOW() - INTERVAL '21 days'
-        )
-        ON CONFLICT (slug) DO NOTHING;
-
-        INSERT INTO blog_posts (title, slug, short_description, description, html, category, is_public, author_id, published_at)
-        VALUES (
-            'Leaky bug bounty bucket',
-            'bug-bounty-bucket',
-            'Tracing a misconfigured object storage bucket leaking build artifacts.',
-            'A small bug bounty note.',
-            $post2$<p>Found a public bucket exposing debug builds; chained with source maps to recover secrets. Fixed through tighter IAM roles and turning off directory listing.</p>$post2$,
-            'Bugs',
-            TRUE,
-            author_id,
-            NOW() - INTERVAL '9 days'
-        )
-        ON CONFLICT (slug) DO NOTHING;
-
-        INSERT INTO blog_posts (title, slug, short_description, description, html, category, is_public, author_id, published_at)
-        VALUES (
-            'Playbook: recon to exploit',
-            'recon-to-exploit',
-            'A compact workflow from passive recon into controlled exploitation.',
-            'Playbook card for the lab.',
-            $post3$<p>Start with subdomain discovery, expand with JS inventory, and trace asset owners. Move deliberately with small proof-of-concepts and capture every request for later reports.</p>$post3$,
-            'Projects',
-            TRUE,
-            author_id,
-            NOW() - INTERVAL '3 days'
-        )
-        ON CONFLICT (slug) DO NOTHING;
-
-        INSERT INTO blog_posts (title, slug, short_description, description, html, category, is_public, author_id, published_at)
-        VALUES (
-            'SSRFi to cloud metadata',
-            'ssrf-metadata',
-            'Walkthrough of exploiting SSRF to reach cloud metadata and pivot to credentials.',
-            'Deep-dive SSRF example with embedded reference link.',
-            $post4$<p>This is a longer walkthrough you can use to review the modal experience. It shows how SSRF in an image proxy let us reach the cloud metadata endpoint. From there we pulled temporary credentials and rotated them into a full compromise.</p>
-            <p>Steps covered:</p>
-            <ol>
-                <li>Baseline request crafting with controlled hostnames and schemas.</li>
-                <li>Header tricks to bypass allowlists.</li>
-                <li>Chaining to <a href="http://169.254.169.254/latest/meta-data/iam/security-credentials/" target="_blank" rel="noreferrer">metadata endpoints</a> to steal creds.</li>
-                <li>Rotating the temporary keys into persistence.</li>
-                <li>Writing detections and guardrails.</li>
-            </ol>
-            <p>This paragraph keeps going so the article exceeds the truncation threshold. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur et dui sit amet dui varius pretium. Praesent mattis libero eget nisl interdum, quis vulputate sem fermentum. Sed non justo id mi gravida varius. Maecenas rhoncus, mauris vitae tincidunt tempor, neque lacus hendrerit nisl, non vestibulum lacus turpis vel lorem. Quisque elementum, orci at interdum pulvinar, ligula erat aliquet enim, vel malesuada lacus justo id sapien. Integer sed leo a eros posuere finibus vitae at nunc.</p>$post4$,
-            'Projects',
-            TRUE,
-            author_id,
-            NOW() - INTERVAL '1 day'
-        )
-        ON CONFLICT (slug) DO NOTHING;
-    END IF;
 
     INSERT INTO social_links (name, url, icon_path, display_order, is_active)
     VALUES

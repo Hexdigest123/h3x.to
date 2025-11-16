@@ -358,6 +358,51 @@
 
         <div class="insight-card">
             <div class="insight-header">
+                <h2>Engagement depth</h2>
+                <span class="pill">Analytics</span>
+            </div>
+            <?php
+                $sessionCount = (int) ($visitorSummary->sessions ?? 0);
+                $activeMinutes = (int) round(($visitorSummary->total_active_time ?? 0) / 60);
+                $inactiveMinutes = (int) round(($visitorSummary->total_inactive_time ?? 0) / 60);
+                $avgPages = number_format((float) ($visitorSummary->avg_pages_per_session ?? 0), 1);
+                $bounceRate = $sessionCount > 0 ? (int) round((($visitorSummary->bounce_sessions ?? 0) / $sessionCount) * 100) : 0;
+                $engagedRate = $sessionCount > 0 ? (int) round((($visitorSummary->engaged_sessions ?? 0) / $sessionCount) * 100) : 0;
+                $totalClicks = (int) ($visitorSummary->total_clicks ?? 0);
+                $totalScrolls = (int) ($visitorSummary->total_scrolls ?? 0);
+                $totalViews = (int) ($visitorSummary->total_page_views ?? 0);
+            ?>
+            <?php if ($sessionCount > 0): ?>
+                <ul class="insight-list">
+                    <li>
+                        <div>
+                            <strong>Avg pages per session</strong>
+                            <p class="muted"><?php echo $engagedRate; ?>% engaged · <?php echo $bounceRate; ?>% bounce</p>
+                        </div>
+                        <span class="pill pill-ghost"><?php echo $avgPages; ?></span>
+                    </li>
+                    <li>
+                        <div>
+                            <strong>Active vs idle time</strong>
+                            <p class="muted"><?php echo $activeMinutes; ?> min active · <?php echo $inactiveMinutes; ?> min idle</p>
+                        </div>
+                        <span class="pill pill-ghost"><?php echo $sessionCount; ?> sessions</span>
+                    </li>
+                    <li>
+                        <div>
+                            <strong>Interactions</strong>
+                            <p class="muted"><?php echo $totalClicks; ?> clicks · <?php echo $totalScrolls; ?> scrolls</p>
+                        </div>
+                        <span class="pill pill-ghost"><?php echo $totalViews; ?> page views</span>
+                    </li>
+                </ul>
+            <?php else: ?>
+                <p class="stat-empty">No analytics recorded yet.</p>
+            <?php endif; ?>
+        </div>
+
+        <div class="insight-card">
+            <div class="insight-header">
                 <h2>Recent posts</h2>
                 <span class="pill">Fresh</span>
             </div>

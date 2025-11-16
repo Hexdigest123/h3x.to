@@ -22,7 +22,7 @@
         <form method="POST" action="<?php echo BASE_URL; ?>admin/login" class="auth-form">
             <div class="form-field">
                 <label for="name">Admin name</label>
-                <input id="name" name="name" type="text" placeholder="Hexdigest" required>
+                <input id="name" name="name" type="text" placeholder="Admin user" required>
             </div>
             <div class="form-field">
                 <label for="password">Password</label>
