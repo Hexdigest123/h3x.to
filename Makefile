@@ -54,7 +54,7 @@ clean: ## Entfernt alle Container und Volumes
 
 init: build up ## Initialisiert das Projekt (Build + Start)
 	@echo "Projekt wurde initialisiert!"
-	@echo "App läuft auf: http://localhost:8080"
+	@echo "App läuft auf: http://localhost:2001"
 	@echo "phpPgAdmin: http://localhost:8081"
 
 reset-db: ## Wipes containers/volumes, recreates DB, seeds schema/data, and starts the stack
@@ -71,4 +71,4 @@ reset-db: ## Wipes containers/volumes, recreates DB, seeds schema/data, and star
 	docker compose exec db env PGPASSWORD="$(DB_PASSWORD)" psql -U "$(DB_USER)" -d "$(DB_NAME)" -f /tmp/seed_test_admin.sql
 	@echo "Starting full stack…"
 	docker compose up -d
-	@echo "All set. App on http://localhost:8080"
+	@echo "All set. App on http://localhost:2001"

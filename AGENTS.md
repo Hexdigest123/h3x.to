@@ -8,7 +8,7 @@
 - `db/`: Database assets placeholder; add migrations/seed files here.
 
 ## Build, Test, and Development Commands
-- `make init`: Build and start the stack; app on `http://localhost:8080`, phpPgAdmin on `http://localhost:8081` (if enabled).
+- `make init`: Build and start the stack; app on `http://localhost:2001`, phpPgAdmin on `http://localhost:8081` (if enabled).
 - `make up` / `make down` / `make restart`: Control containers; use `make clean` to remove volumes when resetting the DB.
 - `make logs`, `make logs-app`, `make logs-nginx`: Tail service logs for debugging.
 - `make shell`: Enter the PHP container (run Composer, lint, or ad-hoc scripts inside).
@@ -22,7 +22,7 @@
 
 ## Testing Guidelines
 - No automated suite yet; add regression coverage as you touch code. Prefer PHPUnit with files under `tests/` named `*Test.php`, run inside the app container.
-- At minimum, lint PHP files (`docker compose exec app php -l path/to/file.php`) and verify key routes load from `http://localhost:8080`.
+- At minimum, lint PHP files (`docker compose exec app php -l path/to/file.php`) and verify key routes load from `http://localhost:2001`.
 
 ## Commit & Pull Request Guidelines
 - Follow the existing `<TYPE>: <subject>` pattern (`feat: ...`, `FIX: ...`, `ADD: ...`), using concise, imperative subjects.

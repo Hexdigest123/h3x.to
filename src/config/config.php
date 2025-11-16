@@ -11,7 +11,7 @@ if (!$envBaseUrl && isset($_SERVER['HTTP_HOST'])) {
     $envBaseUrl = $scheme . '://' . $_SERVER['HTTP_HOST'];
 }
 
-$normalizedBaseUrl = rtrim($envBaseUrl ?: 'http://localhost:8080', '/') . '/';
+$normalizedBaseUrl = rtrim($envBaseUrl ?: 'http://localhost:2001', '/') . '/';
 define('BASE_URL', $normalizedBaseUrl);
 
 // Datenbank-Konfiguration (PostgreSQL)
