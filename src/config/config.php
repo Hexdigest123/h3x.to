@@ -1,7 +1,18 @@
 <?php
 
-// Basis-URL
-define('BASE_URL', 'http://localhost:8080/');
+// Basis-URL: prefer env, otherwise infer from request, fallback to local dev
+$envBaseUrl = getenv('APP_URL') ?: getenv('BASE_URL');
+
+if (!$envBaseUrl && isset($_SERVER['HTTP_HOST'])) {
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        ? 'https'
+        : 'http';
+    $scheme = !empty($_SERVER['REQUEST_SCHEME']) ? $_SERVER['REQUEST_SCHEME'] : $scheme;
+    $envBaseUrl = $scheme . '://' . $_SERVER['HTTP_HOST'];
+}
+
+$normalizedBaseUrl = rtrim($envBaseUrl ?: 'http://localhost:8080', '/') . '/';
+define('BASE_URL', $normalizedBaseUrl);
 
 // Datenbank-Konfiguration (PostgreSQL)
 define('DB_HOST', getenv('DB_HOST') ?: 'db');
