@@ -63,4 +63,25 @@ class User extends Model
         $this->db->bind(':name', $name);
         return $this->db->fetch();
     }
+
+    public function upsertAdmin(string $name, string $passwordHash)
+    {
+        $sql = <<<SQL
+            INSERT INTO users (name, password, role, is_active)
+            VALUES (:name, :password, 'Admin', TRUE)
+            ON CONFLICT (name) DO UPDATE
+            SET
+                password = EXCLUDED.password,
+                role = 'Admin',
+                is_active = TRUE,
+                updated_at = CURRENT_TIMESTAMP
+            RETURNING *
+        SQL;
+
+        $this->db->query($sql)
+            ->bind(':name', $name)
+            ->bind(':password', $passwordHash);
+
+        return $this->db->fetch();
+    }
 }
