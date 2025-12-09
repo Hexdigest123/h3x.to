@@ -960,6 +960,12 @@ body.lock-scroll {
     padding: 3rem 0 1.5rem;
     color: var(--muted);
     font-size: 0.95rem;
+    position: relative;
+    z-index: 1;
+}
+
+body.lock-scroll .site-footer {
+    display: none;
 }
 
 .sr-only {
