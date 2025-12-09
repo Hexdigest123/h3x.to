@@ -6,8 +6,6 @@ services:
     container_name: h3x_app
     restart: unless-stopped
     working_dir: /var/www/html
-    env_file:
-      - ./.env
     environment:
       APP_ENV: ${APP_ENV:-development}
       DB_HOST: ${DB_HOST:-db}
@@ -43,8 +41,6 @@ services:
     image: postgres:15-alpine
     container_name: h3x_db
     restart: unless-stopped
-    env_file:
-      - ./.env
     environment:
       POSTGRES_DB: ${DB_NAME:-mvc_db}
       POSTGRES_USER: ${DB_USER:-mvc_user}
