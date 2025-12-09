@@ -92,10 +92,14 @@ body.lock-scroll {
 }
 
 .site-header,
-.site-main,
 .nav-panel {
     position: relative;
     z-index: 1;
+}
+
+.site-main {
+    position: relative;
+    z-index: 2;
 }
 
 .site-header {
@@ -964,7 +968,8 @@ body.lock-scroll {
     z-index: 1;
 }
 
-body.lock-scroll .site-footer {
+body.lock-scroll .site-footer,
+body.modal-open .site-footer {
     display: none;
 }
 
