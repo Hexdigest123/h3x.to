@@ -968,7 +968,8 @@ body.lock-scroll {
     z-index: 1;
 }
 
-body.lock-scroll .site-footer {
+body.lock-scroll .site-footer,
+body.modal-open .site-footer {
     display: none;
 }
 
