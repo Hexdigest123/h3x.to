@@ -92,10 +92,14 @@ body.lock-scroll {
 }
 
 .site-header,
-.site-main,
 .nav-panel {
     position: relative;
     z-index: 1;
+}
+
+.site-main {
+    position: relative;
+    z-index: 2;
 }
 
 .site-header {
