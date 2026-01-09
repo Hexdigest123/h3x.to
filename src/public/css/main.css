@@ -92,11 +92,14 @@ body.lock-scroll {
 }
 
 .site-header,
-.site-main,
-.site-footer,
 .nav-panel {
     position: relative;
     z-index: 1;
+}
+
+.site-main {
+    position: relative;
+    z-index: 2;
 }
 
 .site-header {
@@ -961,6 +964,13 @@ body.lock-scroll {
     padding: 3rem 0 1.5rem;
     color: var(--muted);
     font-size: 0.95rem;
+    position: relative;
+    z-index: 1;
+}
+
+body.lock-scroll .site-footer,
+body.modal-open .site-footer {
+    display: none;
 }
 
 .sr-only {
