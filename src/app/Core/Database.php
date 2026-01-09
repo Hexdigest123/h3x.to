@@ -29,8 +29,9 @@ class Database
         try {
             $this->dbh = new PDO($dsn, $this->user, $this->pass, $options);
         } catch (PDOException $e) {
-            $this->error = $e->getMessage();
-            die('Datenbankverbindung fehlgeschlagen: ' . $this->error);
+            // Log detailed error server-side only, never expose to user
+            error_log('Database connection failed: ' . $e->getMessage());
+            die('A database error occurred. Please try again later.');
         }
     }
 
