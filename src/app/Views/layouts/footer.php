@@ -3,7 +3,7 @@
     <p>&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($brand ?? APP_NAME, ENT_QUOTES, 'UTF-8'); ?> &middot; Built with curiosity.</p>
 </footer>
 <script src="<?php echo BASE_URL; ?>js/jquery-3.7.1.min.js?v=2"></script>
-<script src="<?php echo BASE_URL; ?>js/main.js?v=2"></script>
-<script src="<?php echo BASE_URL; ?>js/analytics.js?v=1"></script>
+<script src="<?php echo BASE_URL; ?>js/main.js?v=3"></script>
+<script src="<?php echo BASE_URL; ?>js/analytics.js?v=2"></script>
 </body>
 </html>
