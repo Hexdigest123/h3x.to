@@ -11,14 +11,40 @@
         pageViews: 1,
     };
 
+    // Tracks what was last sent so we can compute deltas and avoid
+    // inflating cumulative counters on the backend upsert.
+    const lastSent = {
+        clicks: 0,
+        scrolls: 0,
+        mouseMoves: 0,
+        keyPresses: 0,
+        pageViews: 0,
+        activeTime: 0,
+        inactiveTime: 0,
+    };
+
     const sessionId = getSessionId();
 
+    let scrollRafPending = false;
+    let mouseMoveThrottled = false;
+
     document.addEventListener('click', () => state.clicks += 1);
-    document.addEventListener('mousemove', () => state.mouseMoves += 1);
+    document.addEventListener('mousemove', () => {
+        if (mouseMoveThrottled) return;
+        mouseMoveThrottled = true;
+        state.mouseMoves += 1;
+        setTimeout(() => { mouseMoveThrottled = false; }, 150);
+    });
     document.addEventListener('keydown', () => state.keyPresses += 1);
     window.addEventListener('scroll', () => {
         state.scrolls += 1;
-        updateScrollDepth(state);
+        if (!scrollRafPending) {
+            scrollRafPending = true;
+            requestAnimationFrame(() => {
+                updateScrollDepth(state);
+                scrollRafPending = false;
+            });
+        }
     }, { passive: true });
 
     document.addEventListener('visibilitychange', () => {
@@ -28,14 +54,21 @@
     });
     window.addEventListener('beforeunload', () => flushAnalytics(true));
 
-    // Initial send shortly after load so performance metrics are populated
     window.addEventListener('load', () => {
-        setTimeout(() => flushAnalytics(false), 1200);
+        setTimeout(() => flushAnalytics(false), 3000);
     });
 
     function flushAnalytics(useBeacon) {
         buildPayload()
-            .then((payload) => sendAnalyticsPayload(payload, useBeacon))
+            .then((payload) => {
+                sendAnalyticsPayload(payload, useBeacon);
+                lastSent.clicks = state.clicks;
+                lastSent.scrolls = state.scrolls;
+                lastSent.mouseMoves = state.mouseMoves;
+                lastSent.keyPresses = state.keyPresses;
+                lastSent.pageViews = state.pageViews;
+                lastSent.activeTime = Math.round((performance.now() - start) / 1000);
+            })
             .catch(() => {});
     }
 
@@ -92,7 +125,7 @@
             page_query_string: window.location.search || null,
             page_hash: window.location.hash || null,
             referrer: document.referrer || null,
-            ip_country: ipInfo && (ipInfo.countryCode || ipInfo.country || null),
+            ip_country: ipInfo && (ipInfo.countryCode || null),
             ip_city: ipInfo && (ipInfo.city || null),
             ip_region: ipInfo && (ipInfo.regionName || ipInfo.region || null),
             ip_timezone: ipInfo && (ipInfo.timezone || null),
@@ -145,14 +178,14 @@
             dom_content_loaded_time: performanceData.domContentLoaded,
             load_time: performanceData.load,
             time_on_page: Math.round((now - start) / 1000),
-            active_time: Math.round((now - start) / 1000),
+            active_time: Math.round((now - start) / 1000) - lastSent.activeTime,
             inactive_time: 0,
             max_scroll_depth: Math.round(state.maxScrollDepth),
-            scrolls: state.scrolls,
-            clicks: state.clicks,
-            mouse_movements: state.mouseMoves,
-            key_presses: state.keyPresses,
-            page_views: state.pageViews,
+            scrolls: state.scrolls - lastSent.scrolls,
+            clicks: state.clicks - lastSent.clicks,
+            mouse_movements: state.mouseMoves - lastSent.mouseMoves,
+            key_presses: state.keyPresses - lastSent.keyPresses,
+            page_views: state.pageViews - lastSent.pageViews,
         };
     }
 
