@@ -39,8 +39,7 @@ class App
         $controllerClass = self::CONTROLLER_MAP[$controllerKey];
         $this->controller = new $controllerClass();
 
-        // Methode prüfen
-        if (isset($url[1]) && method_exists($this->controller, $url[1])) {
+        if (isset($url[1]) && $this->isPublicMethod($this->controller, $url[1])) {
             $this->method = $url[1];
             unset($url[1]);
         }
@@ -50,6 +49,16 @@ class App
 
         // Controller-Methode mit Parametern aufrufen
         call_user_func_array([$this->controller, $this->method], $this->params);
+    }
+
+    protected function isPublicMethod(object $controller, string $method): bool
+    {
+        if (!method_exists($controller, $method)) {
+            return false;
+        }
+
+        $reflection = new \ReflectionMethod($controller, $method);
+        return $reflection->isPublic() && !$reflection->isConstructor() && !$reflection->isDestructor();
     }
 
     protected function parseUrl()

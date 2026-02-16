@@ -27,33 +27,13 @@ class HomeController extends Controller
         ];
 
         $linkCards = [];
-        if (!empty($socialLinks)) {
-            foreach ($socialLinks as $link) {
-                $linkCards[] = [
-                    'label' => $link->name,
-                    'href' => $link->url,
-                    'icon' => str_starts_with($link->icon_path, 'http')
-                        ? $link->icon_path
-                        : BASE_URL . ltrim($link->icon_path, '/'),
-                ];
-            }
-        } else {
-            $linkCards = [
-                [
-                    'label' => 'Project site',
-                    'href' => 'https://bruteshard.to',
-                    'icon' => BASE_URL . 'images/url.svg',
-                ],
-                [
-                    'label' => 'GitHub',
-                    'href' => 'https://github.com/hexdigest',
-                    'icon' => BASE_URL . 'images/github.svg',
-                ],
-                [
-                    'label' => 'GitLab',
-                    'href' => 'https://gitlab.com/hexdigest',
-                    'icon' => BASE_URL . 'images/gitlab.svg',
-                ],
+        foreach ($socialLinks as $link) {
+            $linkCards[] = [
+                'label' => $link->name,
+                'href' => $link->url,
+                'icon' => str_starts_with($link->icon_path, 'http')
+                    ? $link->icon_path
+                    : BASE_URL . ltrim($link->icon_path, '/'),
             ];
         }
 

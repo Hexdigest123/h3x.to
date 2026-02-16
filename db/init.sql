@@ -202,7 +202,7 @@ CREATE TABLE visitor_sessions (
     
     -- IP & Location
     ip_address INET NOT NULL,
-    ip_country VARCHAR(2),
+    ip_country VARCHAR(3),
     ip_city VARCHAR(100),
     ip_region VARCHAR(100),
     ip_timezone VARCHAR(50),
@@ -777,7 +777,7 @@ FROM blog_posts;
 DO $$
 BEGIN
     INSERT INTO users (name, password, role)
-    VALUES ('hexdigest', 'changeme', 'Admin')
+    VALUES ('hexdigest', '$2y$12$25ZqmuDxJ9NMXz/potfRXetxOYY1V08dGjIjj7zr5ACvqAOWpCox6', 'Admin')
     ON CONFLICT (name) DO NOTHING;
 
     INSERT INTO social_links (name, url, icon_path, display_order, is_active)

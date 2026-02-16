@@ -123,7 +123,8 @@ class BlogPost extends Model
             ->bind(':is_public', $data['is_public'], \PDO::PARAM_BOOL)
             ->bind(':published_at', $data['published_at']);
 
-        return $this->db->execute();
+        $this->db->execute();
+        return $this->db->rowCount() > 0;
     }
 
     public function deletePost(int $id): bool
@@ -132,5 +133,36 @@ class BlogPost extends Model
         $this->db->query($sql)->bind(':id', $id);
 
         return $this->db->execute();
+    }
+
+    public function getPostBySlug(string $slug): ?object
+    {
+        $sql = 'SELECT id, slug FROM blog_posts WHERE slug = :slug LIMIT 1';
+        $this->db->query($sql)->bind(':slug', $slug);
+
+        $result = $this->db->fetch();
+        return $result ?: null;
+    }
+
+    public function getAllPostsForExport(): array
+    {
+        $sql = <<<SQL
+            SELECT
+                title,
+                slug,
+                category,
+                short_description,
+                description,
+                html,
+                is_public,
+                created_at,
+                published_at
+            FROM blog_posts
+            ORDER BY created_at DESC
+        SQL;
+
+        $this->db->query($sql);
+
+        return $this->db->fetchAll();
     }
 }

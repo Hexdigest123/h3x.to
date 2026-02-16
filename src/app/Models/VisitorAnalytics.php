@@ -134,7 +134,7 @@ class VisitorAnalytics extends Model
                 :save_data
             )
             ON CONFLICT (session_id) DO UPDATE SET
-                fingerprint_hash = EXCLUDED.fingerprint_hash,
+                fingerprint_hash = COALESCE(visitor_sessions.fingerprint_hash, EXCLUDED.fingerprint_hash),
                 ip_address = EXCLUDED.ip_address,
                 ip_country = COALESCE(EXCLUDED.ip_country, visitor_sessions.ip_country),
                 ip_city = COALESCE(EXCLUDED.ip_city, visitor_sessions.ip_city),
@@ -159,9 +159,9 @@ class VisitorAnalytics extends Model
                 platform = EXCLUDED.platform,
                 do_not_track = EXCLUDED.do_not_track,
                 cookies_enabled = EXCLUDED.cookies_enabled,
-                canvas_fingerprint = EXCLUDED.canvas_fingerprint,
-                webgl_vendor = EXCLUDED.webgl_vendor,
-                webgl_renderer = EXCLUDED.webgl_renderer,
+                canvas_fingerprint = COALESCE(visitor_sessions.canvas_fingerprint, EXCLUDED.canvas_fingerprint),
+                webgl_vendor = COALESCE(visitor_sessions.webgl_vendor, EXCLUDED.webgl_vendor),
+                webgl_renderer = COALESCE(visitor_sessions.webgl_renderer, EXCLUDED.webgl_renderer),
                 audio_fingerprint = COALESCE(EXCLUDED.audio_fingerprint, visitor_sessions.audio_fingerprint),
                 installed_fonts = COALESCE(EXCLUDED.installed_fonts, visitor_sessions.installed_fonts),
                 plugins = COALESCE(EXCLUDED.plugins, visitor_sessions.plugins),

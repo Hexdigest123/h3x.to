@@ -1,7 +1,7 @@
-<?php require_once '../app/Views/layouts/header.php'; ?>
+<?php require_once __DIR__ . '/../layouts/header.php'; ?>
 
-<h1><?php echo $title; ?></h1>
-<p><?php echo $description; ?></p>
+<h1><?php echo htmlspecialchars($title ?? '', ENT_QUOTES, 'UTF-8'); ?></h1>
+<p><?php echo htmlspecialchars($description ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
 <p>DAS IST DIE ABOUT PAGE</p>
 
 <div class="welcome-box">
@@ -15,4 +15,4 @@
     </ul>
 </div>
 
-<?php require_once '../app/Views/layouts/footer.php'; ?>
+<?php require_once __DIR__ . '/../layouts/footer.php'; ?>

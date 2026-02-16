@@ -96,7 +96,8 @@ class SocialLink extends Model
             ->bind(':display_order', $data['display_order'])
             ->bind(':is_active', $data['is_active'], \PDO::PARAM_BOOL);
 
-        return $this->db->execute();
+        $this->db->execute();
+        return $this->db->rowCount() > 0;
     }
 
     public function deleteLink(int $id): bool

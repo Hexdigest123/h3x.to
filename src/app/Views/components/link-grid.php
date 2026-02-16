@@ -7,6 +7,7 @@
                     <img src="<?php echo htmlspecialchars($link['icon']); ?>" alt="" loading="lazy">
                 </span>
                 <span class="info-card__label"><?php echo htmlspecialchars($link['label']); ?></span>
+                <span class="sr-only">(opens in new window)</span>
             </a>
         <?php endforeach; ?>
     </div>

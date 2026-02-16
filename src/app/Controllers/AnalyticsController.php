@@ -56,7 +56,7 @@ class AnalyticsController extends Controller
             'session_id' => $sessionId,
             'fingerprint_hash' => $fingerprint,
             'ip_address' => $ip,
-            'ip_country' => $incoming['ip_country'] ?? ($ipDetails['countryCode'] ?? $ipDetails['country'] ?? null),
+            'ip_country' => $this->sanitizeCountryCode($incoming['ip_country'] ?? ($ipDetails['countryCode'] ?? null)),
             'ip_city' => $incoming['ip_city'] ?? ($ipDetails['city'] ?? null),
             'ip_region' => $incoming['ip_region'] ?? ($ipDetails['regionName'] ?? $ipDetails['region'] ?? null),
             'ip_timezone' => $incoming['ip_timezone'] ?? ($ipDetails['timezone'] ?? null),
@@ -226,6 +226,18 @@ class AnalyticsController extends Controller
         }, $items);
 
         return '{' . implode(',', $escaped) . '}';
+    }
+
+    private function sanitizeCountryCode(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+        $code = strtoupper(trim($value));
+        if (preg_match('/^[A-Z]{2}$/', $code)) {
+            return $code;
+        }
+        return null;
     }
 
     private function mapEnum(?string $value, array $allowed, $fallback = null): ?string

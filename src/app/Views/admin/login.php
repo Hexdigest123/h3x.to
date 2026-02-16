@@ -20,6 +20,7 @@
 
     <div class="auth-card">
         <form method="POST" action="<?php echo BASE_URL; ?>admin/login" class="auth-form">
+            <?php echo $csrfField; ?>
             <div class="form-field">
                 <label for="name">Admin name</label>
                 <input id="name" name="name" type="text" placeholder="Admin user" required>

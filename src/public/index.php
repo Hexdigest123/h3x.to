@@ -2,19 +2,36 @@
 
 // Autoloader
 spl_autoload_register(function ($class) {
-    $class = str_replace('App\\', '', $class);
-    $class = str_replace('\\', '/', $class);
-    $file = '../app/' . $class . '.php';
+    if (strpos($class, 'App\\') !== 0) {
+        return;
+    }
 
-    if (file_exists($file)) {
+    $relative = str_replace('\\', '/', substr($class, 4));
+
+    if (strpos($relative, '..') !== false) {
+        return;
+    }
+
+    $file = realpath('../app/' . $relative . '.php');
+    $baseDir = realpath('../app');
+
+    if ($file !== false && $baseDir !== false && strpos($file, $baseDir . DIRECTORY_SEPARATOR) === 0) {
         require_once $file;
     }
 });
 
-// Konfiguration laden
 require_once '../config/config.php';
 
-// Session starten
+$isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+    || (!empty($_SERVER['REQUEST_SCHEME']) && $_SERVER['REQUEST_SCHEME'] === 'https');
+
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'secure' => $isHttps,
+    'httponly' => true,
+    'samesite' => 'Strict',
+]);
 session_start();
 
 // App initialisieren

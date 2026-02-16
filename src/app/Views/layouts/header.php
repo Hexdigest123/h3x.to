@@ -3,27 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="<?php echo $description ?? 'H3x security portfolio'; ?>">
-    <title><?php echo $title ?? APP_NAME; ?></title>
+    <meta name="description" content="<?php echo htmlspecialchars($description ?? 'H3x security portfolio', ENT_QUOTES, 'UTF-8'); ?>">
+    <title><?php echo htmlspecialchars($title ?? APP_NAME, ENT_QUOTES, 'UTF-8'); ?></title>
+    <link rel="canonical" href="<?php echo htmlspecialchars(rtrim(BASE_URL, '/') . '/' . ltrim(($_GET['url'] ?? ''), '/'), ENT_QUOTES, 'UTF-8'); ?>">
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="<?php echo htmlspecialchars($title ?? APP_NAME, ENT_QUOTES, 'UTF-8'); ?>">
+    <meta property="og:description" content="<?php echo htmlspecialchars($description ?? 'H3x security portfolio', ENT_QUOTES, 'UTF-8'); ?>">
+    <meta property="og:url" content="<?php echo htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8'); ?>">
+    <meta property="og:image" content="<?php echo htmlspecialchars(BASE_URL . 'images/og-default.webp', ENT_QUOTES, 'UTF-8'); ?>">
+    <meta property="og:site_name" content="H3x">
+    <meta property="og:locale" content="en_US">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?php echo htmlspecialchars($title ?? APP_NAME, ENT_QUOTES, 'UTF-8'); ?>">
+    <meta name="twitter:description" content="<?php echo htmlspecialchars($description ?? 'H3x security portfolio', ENT_QUOTES, 'UTF-8'); ?>">
+    <meta name="twitter:image" content="<?php echo htmlspecialchars(BASE_URL . 'images/twitter-default.webp', ENT_QUOTES, 'UTF-8'); ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jacques+Francois+Shadow&family=Playfair+Display:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/main.css?v=2">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/main.css?v=3">
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "ProfilePage",
+        "mainEntity": {
+            "@type": "Person",
+            "name": "<?php echo htmlspecialchars($profile['alias'] ?? 'Hexdigest', ENT_QUOTES, 'UTF-8'); ?>",
+            "alternateName": "<?php echo htmlspecialchars($profile['handle'] ?? '@h3x.to', ENT_QUOTES, 'UTF-8'); ?>",
+            "url": "<?php echo htmlspecialchars(rtrim(BASE_URL, '/'), ENT_QUOTES, 'UTF-8'); ?>",
+            "image": "<?php echo htmlspecialchars(BASE_URL . 'images/profile.png', ENT_QUOTES, 'UTF-8'); ?>",
+            "jobTitle": "Security Researcher",
+            "description": "<?php echo htmlspecialchars($profile['summary'] ?? ($description ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+        }
+    }
+    </script>
     <script>
         window.APP_BASE_URL = "<?php echo htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8'); ?>";
         window.APP_CLIENT_IP = "<?php echo htmlspecialchars($_SERVER['HTTP_X_FORWARDED_FOR'] ?? ($_SERVER['REMOTE_ADDR'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>";
     </script>
 </head>
 <body class="site-body">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<?php if (empty($hideIntro)): ?>
 <div class="intro-screen" id="intro-screen">
     <div class="intro-mark">H3x</div>
 </div>
+<?php endif; ?>
 <div class="texture" aria-hidden="true"></div>
     <header class="site-header">
         <a class="brand-mark" href="<?php echo BASE_URL; ?>" aria-label="Return to welcome screen">
-            <span class="brand-icon"><?php echo $brand ?? 'H3x'; ?></span>
+            <span class="brand-icon"><?php echo htmlspecialchars($brand ?? 'H3x', ENT_QUOTES, 'UTF-8'); ?></span>
             <?php if (!empty($brandTagline ?? '')): ?>
-                <span class="brand-label"><?php echo $brandTagline; ?></span>
+                <span class="brand-label"><?php echo htmlspecialchars($brandTagline, ENT_QUOTES, 'UTF-8'); ?></span>
             <?php endif; ?>
         </a>
     <button class="icon-btn menu-toggle" data-target="#nav-panel" aria-controls="nav-panel" aria-expanded="false">
@@ -31,4 +64,4 @@
         <img src="<?php echo BASE_URL; ?>images/burger.svg" alt="" loading="lazy">
     </button>
 </header>
-<main class="site-main">
+<main class="site-main" id="main-content">

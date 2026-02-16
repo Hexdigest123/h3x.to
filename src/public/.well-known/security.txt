@@ -1,0 +1,4 @@
+Contact: https://h3x.to/
+Expires: 2027-02-16T00:00:00.000Z
+Preferred-Languages: en, de
+Canonical: https://h3x.to/.well-known/security.txt

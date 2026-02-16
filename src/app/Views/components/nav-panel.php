@@ -10,12 +10,24 @@
             <ul>
                 <?php foreach ($navLinks as $link): ?>
                     <li>
-                        <a href="<?php echo htmlspecialchars($link['href']); ?>">
-                            <span class="nav-icon" aria-hidden="true">
-                                <img src="<?php echo htmlspecialchars($link['icon']); ?>" alt="">
-                            </span>
-                            <?php echo htmlspecialchars($link['label']); ?>
-                        </a>
+                        <?php if (!empty($link['post'])): ?>
+                            <form method="POST" action="<?php echo htmlspecialchars($link['href']); ?>">
+                                <?php echo $csrfField ?? ''; ?>
+                                <button type="submit">
+                                    <span class="nav-icon" aria-hidden="true">
+                                        <img src="<?php echo htmlspecialchars($link['icon']); ?>" alt="">
+                                    </span>
+                                    <?php echo htmlspecialchars($link['label']); ?>
+                                </button>
+                            </form>
+                        <?php else: ?>
+                            <a href="<?php echo htmlspecialchars($link['href']); ?>">
+                                <span class="nav-icon" aria-hidden="true">
+                                    <img src="<?php echo htmlspecialchars($link['icon']); ?>" alt="">
+                                </span>
+                                <?php echo htmlspecialchars($link['label']); ?>
+                            </a>
+                        <?php endif; ?>
                     </li>
                 <?php endforeach; ?>
             </ul>

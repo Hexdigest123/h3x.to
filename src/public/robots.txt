@@ -1,2 +1,6 @@
 User-agent: *
 Disallow: /admin
+Disallow: /analytics
+Crawl-delay: 10
+
+Sitemap: https://h3x.to/sitemap.xml
