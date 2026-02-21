@@ -32,12 +32,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ── PostgreSQL 15 → 18 migration (dump phase) ──────────────────────
-      # Checks the existing data volume for PG 15 data. If found, spins up
-      # a temporary PG 15 container to dump the database, then removes the
-      # incompatible volume so PG 18 can start fresh.
-      - name: "Migrate PostgreSQL 15 \u2192 18 (dump phase)"
-        id: pg_migrate
+      # ── PostgreSQL 15 → 18 in-place upgrade ─────────────────────────────
+      # Uses pgautoupgrade to run pg_upgrade directly on the data volume.
+      # No dump/restore needed — converts the data directory in-place.
+      - name: "Migrate PostgreSQL 15 \u2192 18"
         run: |
           set -euo pipefail
 
@@ -45,72 +43,36 @@ jobs:
 
           if [ -z "$PG_VOLUME" ]; then
             echo "No postgres_data volume found — fresh install, skipping migration."
-            echo "needs_restore=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          echo "Found volume: $PG_VOLUME"
-
-          # Read PG major version from the data directory
           PG_DATA_VERSION=$(docker run --rm -v "$PG_VOLUME":/pgdata alpine cat /pgdata/PG_VERSION 2>/dev/null || echo "")
           echo "Data directory PG_VERSION: ${PG_DATA_VERSION:-empty}"
 
           if [ "$PG_DATA_VERSION" != "15" ]; then
-            echo "Volume is not PG 15 (version: ${PG_DATA_VERSION:-unknown}). No migration needed."
-            echo "needs_restore=false" >> "$GITHUB_OUTPUT"
+            echo "Not PG 15 (version: ${PG_DATA_VERSION:-unknown}). No migration needed."
             exit 0
           fi
 
-          echo "::group::PostgreSQL 15 → 18 migration — dump"
-
-          # Stop any running/broken containers first
+          echo "PG 15 data detected. Running in-place upgrade to PG 18..."
           docker compose down --remove-orphans 2>/dev/null || true
 
-          # Spin up a temporary PG 15 container with the old data volume
-          docker run -d --name pg_migrate_src \
+          docker run --rm \
             -v "$PG_VOLUME":/var/lib/postgresql/data \
+            -e POSTGRES_USER="${DB_USER:-mvc_user}" \
             -e POSTGRES_PASSWORD="${DB_PASSWORD:-mvc_password}" \
-            postgres:15-alpine
+            -e POSTGRES_DB="${DB_NAME:-mvc_db}" \
+            pgautoupgrade/pgautoupgrade:18-alpine
 
-          echo "Waiting for temporary PG 15 container..."
-          for i in $(seq 1 30); do
-            if docker exec pg_migrate_src pg_isready -U "${DB_USER:-mvc_user}" 2>/dev/null; then
-              echo "PG 15 is ready."
-              break
-            fi
-            if [ "$i" -eq 30 ]; then
-              echo "::error::Temporary PG 15 failed to start within 60s"
-              docker logs pg_migrate_src
-              docker stop pg_migrate_src && docker rm pg_migrate_src || true
-              exit 1
-            fi
-            sleep 2
-          done
+          UPGRADED_VERSION=$(docker run --rm -v "$PG_VOLUME":/pgdata alpine cat /pgdata/PG_VERSION 2>/dev/null || echo "")
+          echo "Post-upgrade PG_VERSION: $UPGRADED_VERSION"
 
-          # Dump the database (full schema + data)
-          echo "Dumping ${DB_NAME:-mvc_db}..."
-          docker exec pg_migrate_src pg_dump \
-            -U "${DB_USER:-mvc_user}" \
-            -d "${DB_NAME:-mvc_db}" \
-            > /tmp/pg_migration_dump.sql
-
-          DUMP_SIZE=$(wc -c < /tmp/pg_migration_dump.sql | tr -d ' ')
-          echo "Dump size: ${DUMP_SIZE} bytes"
-
-          if [ "$DUMP_SIZE" -lt 100 ]; then
-            echo "::error::Dump is suspiciously small (${DUMP_SIZE} bytes). Aborting to protect data."
-            docker stop pg_migrate_src && docker rm pg_migrate_src || true
-            rm -f /tmp/pg_migration_dump.sql
+          if [ "$UPGRADED_VERSION" != "18" ]; then
+            echo "::error::Expected PG_VERSION 18 after upgrade, got: $UPGRADED_VERSION"
             exit 1
           fi
 
-          # Tear down the temporary container and remove the old volume
-          docker stop pg_migrate_src && docker rm pg_migrate_src
-          docker volume rm "$PG_VOLUME"
-          echo "Old PG 15 volume removed."
-
-          echo "needs_restore=true" >> "$GITHUB_OUTPUT"
-          echo "::endgroup::"
+          echo "PostgreSQL 15 → 18 in-place upgrade complete."
 
       - name: Verify environment configuration
         run: |
@@ -134,74 +96,7 @@ jobs:
         run: |
           docker compose down --remove-orphans || true
 
-      # ── Start database first when migrating ────────────────────────────
-      # On a fresh volume PG 18 runs docker-entrypoint-initdb.d scripts
-      # (init.sql + seed). We start db alone so we can drop-and-restore
-      # before the app tries to connect.
-      - name: Start database for migration
-        if: steps.pg_migrate.outputs.needs_restore == 'true'
-        run: |
-          docker compose up -d db
-
-          echo "Waiting for PG 18 to accept connections..."
-          for i in $(seq 1 30); do
-            if docker compose exec -T db pg_isready -U "${DB_USER:-mvc_user}" 2>/dev/null; then
-              echo "PG 18 is ready."
-              break
-            fi
-            if [ "$i" -eq 30 ]; then
-              echo "::error::PG 18 failed to become ready within 60s"
-              docker compose logs db
-              exit 1
-            fi
-            sleep 2
-          done
-
-      # ── PostgreSQL 15 → 18 migration (restore phase) ───────────────────
-      # Drops the schema that init.sql created on the fresh volume, then
-      # restores the full dump captured from PG 15.
-      - name: "Migrate PostgreSQL 15 \u2192 18 (restore phase)"
-        if: steps.pg_migrate.outputs.needs_restore == 'true'
-        run: |
-          set -euo pipefail
-          echo "::group::PostgreSQL 15 → 18 migration — restore"
-
-          # Drop the schema that init.sql just created on the fresh volume
-          echo "Dropping init.sql schema..."
-          docker compose exec -T db psql \
-            -U "${DB_USER:-mvc_user}" \
-            -d "${DB_NAME:-mvc_db}" \
-            -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO PUBLIC;"
-
-          # Restore the PG 15 dump into PG 18
-          echo "Restoring dump into PG 18..."
-          docker compose exec -T db psql \
-            -U "${DB_USER:-mvc_user}" \
-            -d "${DB_NAME:-mvc_db}" \
-            < /tmp/pg_migration_dump.sql
-
-          # Verify the restore
-          TABLE_COUNT=$(docker compose exec -T db psql \
-            -U "${DB_USER:-mvc_user}" \
-            -d "${DB_NAME:-mvc_db}" \
-            -tAc "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE';")
-          PG_VERSION=$(docker compose exec -T db psql \
-            -U "${DB_USER:-mvc_user}" \
-            -d "${DB_NAME:-mvc_db}" \
-            -tAc "SHOW server_version;")
-
-          echo "PostgreSQL version: $PG_VERSION"
-          echo "Tables restored: ${TABLE_COUNT// /}"
-
-          if [ "${TABLE_COUNT// /}" -lt 5 ]; then
-            echo "::warning::Only ${TABLE_COUNT// /} tables found — expected more. Review restore output above."
-          fi
-
-          rm -f /tmp/pg_migration_dump.sql
-          echo "::endgroup::"
-          echo "PostgreSQL 15 → 18 migration complete."
-
-      - name: Start all services
+      - name: Start new containers
         run: |
           docker compose up -d
 
